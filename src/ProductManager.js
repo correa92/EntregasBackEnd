@@ -1,0 +1,158 @@
+import fs from "fs/promises";
+
+export default class ProductManager {
+  idAuto = 1;
+  #products;
+
+  constructor() {
+    this.#products = [];
+    this.path = "./src/products.json";
+  }
+
+  //methods
+  async addProduct(objet) {
+    try {
+      const fileProducts = await fs.readFile(this.path, { encoding: "utf-8" });
+
+      this.#products = JSON.parse(fileProducts);
+
+      const { title, description, price, thumbnail, code, stock } = objet;
+
+      //I verify that the fields have the correct data types and that they are not empty
+      const cleanTitle = title.trim();
+      const cleanDescription = description.trim();
+      const cleanThumbnail = thumbnail.trim();
+      const cleanCode = code.trim(); //it will be considered alphanumeric
+
+      if (
+        cleanTitle.length === 0 ||
+        cleanDescription.length === 0 ||
+        cleanThumbnail.length === 0 ||
+        cleanCode.length === 0
+      ) {
+        throw new Error("Debe completar todos los campos correctamente!");
+      } else if (price <= 0 || stock < 0) {
+        throw new Error("Debe ingresar valores positivos!");
+      } else if (isNaN(price) || isNaN(stock)) {
+        throw new Error("Debe ingresar valores numéricos!");
+      }
+
+      //before creating an object, I check if the product is in the product array
+      const codeProduct = this.#products.find(
+        (prod) => prod.code === cleanCode
+      );
+
+      if (codeProduct) {
+        return "El producto que desea ingresar ya se encuentra en la lista";
+      }
+
+      const newProduct = {
+        title: cleanTitle,
+        description: cleanDescription,
+        price: price,
+        thumbnail: cleanThumbnail,
+        code: cleanCode,
+        stock: stock,
+      };
+
+      this.#products.push({ ...newProduct, id: this.idAuto });
+      this.idAuto++;
+
+      await fs.writeFile(this.path, JSON.stringify(this.#products));
+      return "Producto Agregado correctamente!";
+    } catch (er) {
+      console.log(er);
+    }
+  }
+
+  async getProducts() {
+    try {
+      const fileProducts = await fs.readFile(this.path, { encoding: "utf-8" });
+
+      this.#products = JSON.parse(fileProducts);
+
+      // get max id of the list
+      this.#products.forEach((prod) => {
+        if (prod.id + 1 > this.idAuto) {
+          this.idAuto = prod.id + 1;
+        }
+      });
+
+      return this.#products;
+    } catch (er) {
+      await fs.writeFile(this.path, "[]");
+      return [];
+    }
+  }
+
+  async getProductById(idProduct) {
+    try {
+      const fileProducts = await fs.readFile(this.path, { encoding: "utf-8" });
+
+      this.#products = JSON.parse(fileProducts);
+
+      const product = this.#products.find((prod) => prod.id == idProduct);
+      if (product) {
+        return product;
+      } else {
+        return { Error: "El producto no existe" };
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async updateProduct(idProduct, setObjet) {
+    try {
+      const fileProducts = await fs.readFile(this.path, { encoding: "utf-8" });
+
+      this.#products = JSON.parse(fileProducts);
+
+      const keys = Object.keys(setObjet);
+      const values = Object.values(setObjet);
+
+      for (const i of keys) {
+        if (i == "id") {
+          throw new Error("No se puede modificar el id!");
+        }
+      }
+
+      const product = this.#products.find((prod) => prod.id === idProduct);
+
+      if (product) {
+        for (let i = 0; i < keys.length; i++) {
+          product[keys[i]] = values[i];
+        }
+        await fs.writeFile(this.path, JSON.stringify(this.#products));
+      } else {
+        throw new Error("No se encontro el producto!");
+      }
+      return product;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async deleteProduct(idProduct) {
+    try {
+      const fileProducts = await fs.readFile(this.path, { encoding: "utf-8" });
+
+      this.#products = JSON.parse(fileProducts);
+
+      const indexProduct = this.#products.findIndex(
+        (prod) => prod.id === idProduct
+      );
+
+      if (indexProduct != -1) {
+        this.#products.splice(indexProduct, 1);
+
+        await fs.writeFile(this.path, JSON.stringify(this.#products));
+        return;
+      } else {
+        throw new Error("No se puede borrar un producto que no existe!");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+} //end class ProductoManager
