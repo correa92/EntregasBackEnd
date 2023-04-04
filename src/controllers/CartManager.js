@@ -97,8 +97,8 @@ export default class CartManager {
       }
 
       await fs.promises.writeFile(this.path, JSON.stringify(this.#carts));
-      return this.#carts;
-      // return "Producto Agregado correctamente!";
+
+      return "Producto Agregado correctamente!";
     } catch (er) {
       console.log(er);
     }
@@ -112,7 +112,7 @@ export default class CartManager {
 
       if (cart) {
         if (cart.products.length === 0) {
-          return "El carrito se encuentra vacío";
+          return {Error : "El carrito se encuentra vacío"};
         }
         return cart.products;
       } else {
