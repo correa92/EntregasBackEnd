@@ -13,28 +13,36 @@ export default class ProductManager {
   async addProduct(objet) {
     try {
       const fileProducts = await fs.readFile(this.path, { encoding: "utf-8" });
-
       this.#products = JSON.parse(fileProducts);
 
-      const { title, description, price, thumbnail, code, stock } = objet;
+      const {
+        title,
+        description,
+        price,
+        thumbnail,
+        code,
+        stock,
+        status,
+        category,
+      } = objet;
 
       //I verify that the fields have the correct data types and that they are not empty
       const cleanTitle = title.trim();
       const cleanDescription = description.trim();
-      const cleanThumbnail = thumbnail.trim();
       const cleanCode = code.trim(); //it will be considered alphanumeric
+      const cleanCategory = category.trim();
 
       if (
         cleanTitle.length === 0 ||
         cleanDescription.length === 0 ||
-        cleanThumbnail.length === 0 ||
-        cleanCode.length === 0
+        cleanCode.length === 0 ||
+        cleanCategory.length === 0
       ) {
-        throw new Error("Debe completar todos los campos correctamente!");
+        return "Debe completar todos los campos correctamente!";
       } else if (price <= 0 || stock < 0) {
-        throw new Error("Debe ingresar valores positivos!");
+        return "Debe ingresar valores positivos!";
       } else if (isNaN(price) || isNaN(stock)) {
-        throw new Error("Debe ingresar valores numéricos!");
+        return "Debe ingresar valores numéricos!";
       }
 
       //before creating an object, I check if the product is in the product array
@@ -50,10 +58,19 @@ export default class ProductManager {
         title: cleanTitle,
         description: cleanDescription,
         price: price,
-        thumbnail: cleanThumbnail,
+        thumbnail: thumbnail ? thumbnail : [],
         code: cleanCode,
         stock: stock,
+        category: cleanCategory,
+        status: status == undefined ? true : false,
       };
+
+      // get max id of the list
+      this.#products.forEach((prod) => {
+        if (prod.id + 1 > this.idAuto) {
+          this.idAuto = prod.id + 1;
+        }
+      });
 
       this.#products.push({ ...newProduct, id: this.idAuto });
       this.idAuto++;
@@ -70,13 +87,6 @@ export default class ProductManager {
       const fileProducts = await fs.readFile(this.path, { encoding: "utf-8" });
 
       this.#products = JSON.parse(fileProducts);
-
-      // get max id of the list
-      this.#products.forEach((prod) => {
-        if (prod.id + 1 > this.idAuto) {
-          this.idAuto = prod.id + 1;
-        }
-      });
 
       return this.#products;
     } catch (er) {
@@ -113,11 +123,11 @@ export default class ProductManager {
 
       for (const i of keys) {
         if (i == "id") {
-          throw new Error("No se puede modificar el id!");
+          return "No se puede modificar el id!";
         }
       }
 
-      const product = this.#products.find((prod) => prod.id === idProduct);
+      const product = this.#products.find((prod) => prod.id == idProduct);
 
       if (product) {
         for (let i = 0; i < keys.length; i++) {
@@ -125,7 +135,7 @@ export default class ProductManager {
         }
         await fs.writeFile(this.path, JSON.stringify(this.#products));
       } else {
-        throw new Error("No se encontro el producto!");
+        return "No se encontro el producto!";
       }
       return product;
     } catch (error) {
@@ -140,7 +150,7 @@ export default class ProductManager {
       this.#products = JSON.parse(fileProducts);
 
       const indexProduct = this.#products.findIndex(
-        (prod) => prod.id === idProduct
+        (prod) => prod.id == idProduct
       );
 
       if (indexProduct != -1) {
@@ -149,7 +159,7 @@ export default class ProductManager {
         await fs.writeFile(this.path, JSON.stringify(this.#products));
         return;
       } else {
-        throw new Error("No se puede borrar un producto que no existe!");
+        return "No se puede borrar un producto que no existe!";
       }
     } catch (error) {
       console.log(error);
