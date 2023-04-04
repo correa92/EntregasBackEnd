@@ -6,7 +6,7 @@ export default class ProductManager {
 
   constructor() {
     this.#products = [];
-    this.path = "./src/products.json";
+    this.path = "./src/db/products.json";
   }
 
   //methods

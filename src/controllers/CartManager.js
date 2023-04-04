@@ -8,8 +8,8 @@ export default class CartManager {
   constructor() {
     this.#carts = [];
     this.#products = [];
-    this.path = "./src/carts.json";
-    this.pathProducts = "./src/products.json";
+    this.path = "./src/db/carts.json";
+    this.pathProducts = "./src/db/products.json";
   }
 
   //methods
