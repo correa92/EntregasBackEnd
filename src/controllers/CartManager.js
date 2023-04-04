@@ -3,13 +3,10 @@ import fs from "fs";
 export default class CartManager {
   idAuto = 1;
   #carts;
-  #products;
 
   constructor() {
     this.#carts = [];
-    this.#products = [];
     this.path = "./src/db/carts.json";
-    this.pathProducts = "./src/db/products.json";
   }
 
   //methods
@@ -48,30 +45,28 @@ export default class CartManager {
     }
   }
 
-  async addProductToCart(idCart, idProduct) {
+  async getCarts() {
     try {
       // verify exist the file carts
       if (fs.existsSync(this.path)) {
         const fileCarts = await fs.promises.readFile(this.path, {
           encoding: "utf-8",
         });
-        this.#carts = JSON.parse(fileCarts);
+        return JSON.parse(fileCarts);
       } else {
         return { Error: "Error: No se puede leer el archivo" };
       }
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
-      // verify exist the file products
-      if (fs.existsSync(this.pathProducts)) {
-        const fileProducts = await fs.promises.readFile(this.pathProducts, {
-          encoding: "utf-8",
-        });
-        this.#products = JSON.parse(fileProducts);
-      } else {
-        return { Error: "Error: No se puede leer el archivo" };
-      }
-
+  async addProductToCart(idCart, idProduct) {
+    try {
       let indexCart;
       let cart;
+
+      this.#carts = await this.getCarts();
 
       // verify that the cart exist
       this.#carts.forEach((elemento, index) => {
@@ -81,40 +76,29 @@ export default class CartManager {
         }
       });
 
-      // verify that the product exist
-      const productInFile = this.#products.find((prod) => prod.id == idProduct);
-
       if (!cart) {
         return { Error: "El carrito seleccionado no existe!" };
-      }
-      if (!productInFile) {
-        return { Error: "El producto seleccionado no existe!" };
       }
 
       //verify that the product exist in the list of cart
       const indexProducts = cart.products.findIndex(
-        (el) => el.product == productInFile.id
+        (el) => el.product == idProduct
       );
 
       if (indexProducts != -1) {
         // If the product is in the cart then increase its quantity
-        const increment = cart.products[indexProducts].quantity + 1;
-
-        this.#carts[indexCart].products[indexProducts] = {
-          ...this.#carts[indexCart].products[indexProducts],
-          product: idProduct,
-          quantity: increment,
-        };
+        this.#carts[indexCart].products[indexProducts].quantity++;
       } else {
-        this.#carts[indexCart].products.push({
-          ...this.#carts[indexCart].products[indexProducts],
+        const newProduct = {
           product: idProduct,
           quantity: 1,
-        });
+        };
+        this.#carts[indexCart].products.push(newProduct);
       }
 
       await fs.promises.writeFile(this.path, JSON.stringify(this.#carts));
-      return "Producto Agregado correctamente!";
+      return this.#carts;
+      // return "Producto Agregado correctamente!";
     } catch (er) {
       console.log(er);
     }
@@ -122,25 +106,17 @@ export default class CartManager {
 
   async getCartById(idCart) {
     try {
-      if (fs.existsSync(this.path)) {
-        const fileCart = await fs.promises.readFile(this.path, {
-          encoding: "utf-8",
-        });
+      this.#carts = await this.getCarts();
 
-        this.#carts = JSON.parse(fileCart);
+      const cart = this.#carts.find((cart) => cart.id == idCart);
 
-        const cart = this.#carts.find((cart) => cart.id == idCart);
-
-        if (cart) {
-          if (cart.products.length === 0) {
-            return "El carrito se encuentra vacío";
-          }
-          return cart.products;
-        } else {
-          return { Error: "El carrito no existe" };
+      if (cart) {
+        if (cart.products.length === 0) {
+          return "El carrito se encuentra vacío";
         }
+        return cart.products;
       } else {
-        return { Error: "Error al leer el archivo" };
+        return { Error: "El carrito no existe" };
       }
     } catch (error) {
       console.log(error);

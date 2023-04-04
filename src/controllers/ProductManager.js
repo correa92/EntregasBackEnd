@@ -104,9 +104,8 @@ export default class ProductManager {
       const product = this.#products.find((prod) => prod.id == idProduct);
       if (product) {
         return product;
-      } else {
-        return { Error: "El producto no existe" };
       }
+      return;
     } catch (error) {
       console.log(error);
     }

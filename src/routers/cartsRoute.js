@@ -19,11 +19,23 @@ cartsRoute.post("/", async (req, res) => {
 });
 
 cartsRoute.post("/:cid/product/:pid", async (req, res) => {
-  const { cid, pid } = req.params;
-  const product = await classPM.getProductById(pid);
-  const cart = await classCM.addProductToCart(cid, pid);
-  //sin terminar
-  res.status(201).json(product);
+  try {
+    const { cid, pid } = req.params;
+    const product = await classPM.getProductById(pid);
+    const cart = await classCM.getCartById(cid);
+
+    if (cart && product) {
+      const response = await classCM.addProductToCart(cid, pid);
+      return res.status(201).json({ data: response });
+    } else {
+      return res.status(400).json({ error: "Producto o Carrito Inválido" });
+    }
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(400)
+      .json({ message: "Error, no se pudo agregar producto al carrito" });
+  }
 });
 
 export default cartsRoute;
