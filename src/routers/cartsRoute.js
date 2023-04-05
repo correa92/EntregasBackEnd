@@ -25,11 +25,13 @@ cartsRoute.post("/", async (req, res) => {
   try {
     const createProduct = await classCM.createCart();
     if (createProduct.Error) {
-      res.status(400).json({ status: "Error", Error: createProduct.Error });
+      return res
+        .status(400)
+        .json({ status: "Error", Error: createProduct.Error });
     }
-    res.status(201).json(createProduct);
+    return res.status(201).json(createProduct);
   } catch (error) {
-    res.status(400).json({ status: "Error", Error: error });
+    return res.status(400).json({ status: "Error", Error: error });
   }
 });
 
@@ -40,15 +42,11 @@ cartsRoute.post("/:cid/product/:pid", async (req, res) => {
     const cart = await classCM.getCartById(cid);
 
     if (cart.Error) {
-      return res
-        .status(400)
-        .json({ status: "error", Error: cart.Error });
+      return res.status(400).json({ status: "error", Error: cart.Error });
     }
 
     if (product.Error) {
-      return res
-        .status(400)
-        .json({ status: "error", Error: product.Error });
+      return res.status(400).json({ status: "error", Error: product.Error });
     }
 
     const response = await classCM.addProductToCart(cid, pid);

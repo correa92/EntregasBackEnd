@@ -10,11 +10,23 @@ export default class ProductManager {
   }
 
   //methods
+  async readData() {
+    try {
+      const data = await fs.readFile(this.path, { encoding: "utf-8" });
+      return JSON.parse(data);
+    } catch (error) {
+      await fs.writeFile(this.path, "[]");
+      return { Error: error };
+    }
+  }
+
   async addProduct(objet) {
     try {
-      const fileProducts = await fs.readFile(this.path, { encoding: "utf-8" });
-      this.#products = JSON.parse(fileProducts);
+      this.#products = await this.readData();
 
+      if (this.#products.Error) {
+        return { Error: this.#products.Error };
+      }
       const {
         title,
         description,
@@ -38,11 +50,11 @@ export default class ProductManager {
         cleanCode.length === 0 ||
         cleanCategory.length === 0
       ) {
-        return "Debe completar todos los campos correctamente!";
+        return { Error: "Debe completar todos los campos correctamente!" };
       } else if (price <= 0 || stock < 0) {
-        return "Debe ingresar valores positivos!";
+        return { Error: "Debe ingresar valores positivos!" };
       } else if (isNaN(price) || isNaN(stock)) {
-        return "Debe ingresar valores numéricos!";
+        return { Error: "Debe ingresar valores numéricos!" };
       }
 
       //before creating an object, I check if the product is in the product array
@@ -51,7 +63,9 @@ export default class ProductManager {
       );
 
       if (codeProduct) {
-        return "El producto que desea ingresar ya se encuentra en la lista";
+        return {
+          Error: "El producto que desea ingresar ya se encuentra en la lista",
+        };
       }
 
       const newProduct = {
@@ -77,29 +91,30 @@ export default class ProductManager {
 
       await fs.writeFile(this.path, JSON.stringify(this.#products));
       return "Producto Agregado correctamente!";
-    } catch (er) {
-      return { Error: er };
+    } catch (error) {
+      return { Error: error };
     }
   }
 
   async getProducts() {
     try {
-      const fileProducts = await fs.readFile(this.path, { encoding: "utf-8" });
-
-      this.#products = JSON.parse(fileProducts);
-
+      this.#products = await this.readData();
+      if (this.#products.Error) {
+        return { Error: this.#products.Error };
+      }
       return this.#products;
-    } catch (er) {
-      await fs.writeFile(this.path, "[]");
-      return [];
+    } catch (error) {
+      return { Error: error };
     }
   }
 
   async getProductById(idProduct) {
     try {
-      const fileProducts = await fs.readFile(this.path, { encoding: "utf-8" });
+      this.#products = await this.readData();
 
-      this.#products = JSON.parse(fileProducts);
+      if (this.#products.Error) {
+        return { Error: this.#products.Error };
+      }
 
       const product = this.#products.find((prod) => prod.id == idProduct);
       if (product) {
@@ -107,22 +122,24 @@ export default class ProductManager {
       }
       return { Error: "El producto no existe" };
     } catch (error) {
-      return { Error: `${error}` };
+      return { Error: error };
     }
   }
 
   async updateProduct(idProduct, setObjet) {
     try {
-      const fileProducts = await fs.readFile(this.path, { encoding: "utf-8" });
+      this.#products = await this.readData();
 
-      this.#products = JSON.parse(fileProducts);
+      if (this.#products.Error) {
+        return { Error: this.#products.Error };
+      }
 
       const keys = Object.keys(setObjet);
       const values = Object.values(setObjet);
 
       for (const i of keys) {
         if (i == "id") {
-          return "No se puede modificar el id!";
+          return { Error: "No se puede modificar el id!" };
         }
       }
 
@@ -134,7 +151,7 @@ export default class ProductManager {
         }
         await fs.writeFile(this.path, JSON.stringify(this.#products));
       } else {
-        return "No se encontro el producto!";
+        return { Error: "No se encontro el producto!" };
       }
       return product;
     } catch (error) {
@@ -144,9 +161,11 @@ export default class ProductManager {
 
   async deleteProduct(idProduct) {
     try {
-      const fileProducts = await fs.readFile(this.path, { encoding: "utf-8" });
+      this.#products = await this.readData();
 
-      this.#products = JSON.parse(fileProducts);
+      if (this.#products.Error) {
+        return { Error: this.#products.Error };
+      }
 
       const indexProduct = this.#products.findIndex(
         (prod) => prod.id == idProduct
@@ -156,9 +175,9 @@ export default class ProductManager {
         this.#products.splice(indexProduct, 1);
 
         await fs.writeFile(this.path, JSON.stringify(this.#products));
-        return;
+        return "Producto eliminado correctamente";
       } else {
-        return "No se puede borrar un producto que no existe!";
+        return { Error: "No se puede borrar un producto que no existe!" };
       }
     } catch (error) {
       return { Error: error };
