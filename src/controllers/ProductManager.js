@@ -78,7 +78,7 @@ export default class ProductManager {
       await fs.writeFile(this.path, JSON.stringify(this.#products));
       return "Producto Agregado correctamente!";
     } catch (er) {
-      console.log(er);
+      return { Error: er };
     }
   }
 
@@ -105,9 +105,9 @@ export default class ProductManager {
       if (product) {
         return product;
       }
-      return;
+      return { Error: "El producto no existe" };
     } catch (error) {
-      console.log(error);
+      return { Error: `${error}` };
     }
   }
 
@@ -138,7 +138,7 @@ export default class ProductManager {
       }
       return product;
     } catch (error) {
-      console.log(error);
+      return { Error: error };
     }
   }
 
@@ -161,7 +161,7 @@ export default class ProductManager {
         return "No se puede borrar un producto que no existe!";
       }
     } catch (error) {
-      console.log(error);
+      return { Error: error };
     }
   }
 } //end class ProductoManager

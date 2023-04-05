@@ -12,36 +12,34 @@ export default class CartManager {
   //methods
   async createCart() {
     try {
-      if (fs.existsSync(this.path)) {
-        const fileCarts = await fs.promises.readFile(this.path, {
-          encoding: "utf-8",
-        });
-        this.#carts = JSON.parse(fileCarts);
+      this.#carts = await this.getCarts();
 
-        // get max id of the list
-        this.#carts.forEach((cart) => {
-          if (cart.id + 1 > this.idAuto) {
-            this.idAuto = cart.id + 1;
-          }
-        });
-
-        const cart = {
-          id: this.idAuto,
-          products: [],
-        };
-
-        this.#carts.push(cart);
-        await fs.promises.writeFile(this.path, JSON.stringify(this.#carts));
-
-        return "Carrito creado correctamente!";
-      } else {
-        return await fs.promises.writeFile(
+      if (this.#carts.Error) {
+        await fs.promises.writeFile(
           this.path,
           JSON.stringify([{ id: 1, products: [] }])
         );
+        return "Carrito creado correctamente!";
       }
+
+      // get max id of the list
+      this.#carts.forEach((cart) => {
+        if (cart.id + 1 > this.idAuto) {
+          this.idAuto = cart.id + 1;
+        }
+      });
+
+      const cart = {
+        id: this.idAuto,
+        products: [],
+      };
+
+      this.#carts.push(cart);
+      await fs.promises.writeFile(this.path, JSON.stringify(this.#carts));
+
+      return "Carrito creado correctamente!";
     } catch (error) {
-      console.log(error);
+      return { Error: `${error}` };
     }
   }
 
@@ -54,10 +52,10 @@ export default class CartManager {
         });
         return JSON.parse(fileCarts);
       } else {
-        return { Error: "Error: No se puede leer el archivo" };
+        return { Error: "No se puede leer el archivo" };
       }
     } catch (error) {
-      console.log(error);
+      return { Error: `${error}` };
     }
   }
 
@@ -67,6 +65,10 @@ export default class CartManager {
       let cart;
 
       this.#carts = await this.getCarts();
+
+      if (this.#carts.Error) {
+        return { Error: this.#carts.Error };
+      }
 
       // verify that the cart exist
       this.#carts.forEach((elemento, index) => {
@@ -100,7 +102,7 @@ export default class CartManager {
 
       return "Producto Agregado correctamente!";
     } catch (er) {
-      console.log(er);
+      return { Error: `${er}` };
     }
   }
 
@@ -108,18 +110,18 @@ export default class CartManager {
     try {
       this.#carts = await this.getCarts();
 
+      if (this.#carts.Error) {
+        return { Error: this.#carts.Error };
+      }
       const cart = this.#carts.find((cart) => cart.id == idCart);
 
       if (cart) {
-        if (cart.products.length === 0) {
-          return {Error : "El carrito se encuentra vacío"};
-        }
         return cart.products;
       } else {
         return { Error: "El carrito no existe" };
       }
     } catch (error) {
-      console.log(error);
+      return { Error: `${error}` };
     }
   }
 } //end class CartManager
