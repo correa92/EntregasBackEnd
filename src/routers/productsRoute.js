@@ -49,7 +49,7 @@ productsRoute.post("/", async (req, res) => {
   } catch (error) {
     return res.status(400).json({ status: "Error", Error: error });
   }
-});
+}); 
 
 productsRoute.put("/:pid", async (req, res) => {
   try {
