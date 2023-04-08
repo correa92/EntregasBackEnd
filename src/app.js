@@ -5,6 +5,9 @@ import viewsRoute from "./routers/viewsRoute.js";
 import handlebars from "express-handlebars";
 import { resolve } from "path";
 import { Server } from "socket.io";
+import ProductManager from "./controllers/ProductManager.js";
+
+const classPM = new ProductManager();
 
 const app = express();
 
@@ -25,12 +28,26 @@ try {
 
   socketServer.on("connection", (socket) => {
     console.log("Nuevo cliente conectado");
-    const productsList = [];
 
-    socket.on("message",data=>{
-      socketServer.emit("paraTodos",data);
-    })
-    
+    socket.on("message", async (data) => {
+      if (data.product) {
+        const addProduct = await classPM.addProduct(data.product);
+        if (addProduct.Error) {
+          return addProduct.Error;
+        }
+      }
+      if (data.remove) {
+        const removeProduct = await classPM.deleteProduct(data.remove);
+        if (removeProduct.Error) {
+          return removeProduct.Error;
+        }
+      }
+      const getProducts = await classPM.getProducts();
+      if (getProducts.Error) {
+        return getProducts.Error;
+      }
+      socketServer.emit("paraTodos", { products: getProducts });
+    });
   });
 
   app.engine(

@@ -24,7 +24,7 @@ viewsRoute.get("/realtimeproducts", async (req, res) => {
     if (products.Error) {
       return res.status(400).json({ Error: products.Error });
     }
-    res.render("realTimeProducts", {products});
+    res.render("realTimeProducts", { products });
   } catch (error) {
     res.status(400).json({ Error: error });
   }

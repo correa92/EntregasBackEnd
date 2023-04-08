@@ -8,12 +8,20 @@
         name="nombre"
         placeholder="Nombre producto"
       />
+
       <input
         type="num"
         id="precio"
         name="precio"
         placeholder="Precio producto"
       />
+      <input
+        type="text"
+        id="codigo"
+        name="codigo"
+        placeholder="Código producto"
+      />
+
       <button type="submit">Agregar</button>
     </fieldset>
   </form>
@@ -29,7 +37,7 @@
   <hr />
   <ul id="lista">
     {{#each products}}
-      <li class="container" id="producto_{{this.id}}">
+      <li class="container">
         <p>id: {{this.id}}</p>
         <p>Nombre:{{this.title}}</p>
         <p>Descripción:{{this.description}}</p>
@@ -43,4 +51,4 @@
   </ul>
 </div>
 <script src="/socket.io/socket.io.js"></script>
-<script src="/js/index.js"></script>
+<script  type="module" src="/js/index.js"></script>
