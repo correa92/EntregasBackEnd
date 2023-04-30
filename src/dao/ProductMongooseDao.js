@@ -19,9 +19,7 @@ class ProductMongooseDao {
 
   async findOne(id) {
     const productDocument = await productSchema.findOne({ _id: id });
-    if (!productDocument) {
-      throw new Error("The product does not exist");
-    }
+
     return {
       title: productDocument?.title,
       description: productDocument?.description,
