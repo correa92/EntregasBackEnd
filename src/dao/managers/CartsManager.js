@@ -41,11 +41,64 @@ class CartManager {
       }
 
       return this.cartDao.updateCart(cid, cart);
-      
+    } catch (error) {
+      return { Error: error.message };
+    }
+  }
+
+  async removeProductFromCart(cid, pid) {
+    const cart = await this.cartDao.getOne(cid);
+
+    const newListProducts = cart.products.filter(
+      (prod) => prod.idProduct.toString() !== pid
+    );
+
+    cart.products = newListProducts;
+
+    return this.cartDao.updateCart(cid, cart);
+  }
+
+  async removeAllProductFromCart(cid) {
+    return this.cartDao.updateCart(cid, { products: [] });
+  }
+
+  async addListProducts(cid, data) {
+    const cart = await this.cartDao.getOne(cid);
+
+    cart.products = data;
+
+    return this.cartDao.updateCart(cid, cart);
+  }
+
+  async updateQuantity(cid, pid, data) {
+    try {
+      const cart = await this.cartDao.getOne(cid);
+      const product = await this.productDao.findOne(pid);
+
+      if (cart.id === undefined) {
+        return { Error: "Cart id not found" };
+      }
+
+      if (product.id === undefined) {
+        return { Error: "Product id not found" };
+      }
+
+      const productsInCart = cart.products.map((p) => p.idProduct.toString());
+
+      productsInCart.forEach((prod, index) => {
+        if (prod === pid) {
+          cart.products[index].quantity = data.quantity;
+        }
+      });
+
+      if (!productsInCart.includes(pid)) {
+        cart.products.push({ idProduct: pid, quantity: data.quantity });
+      }
+
+      return this.cartDao.updateCart(cid, cart);
     } catch (error) {
       return { Error: error.message };
     }
   }
 }
-
 export default CartManager;

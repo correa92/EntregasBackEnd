@@ -4,23 +4,35 @@ export const get = async (req, res) => {
   try {
     const classPM = new ProductManager();
 
-    const { limit } = req.query;
-    const products = await classPM.find();
+    const { limit, page, category, status, sort } = req.query;
 
-    if (limit) {
-      const limitedProducts = products.slice(0, limit);
-      return res.status(200).json({
-        status: "success",
-        message: "Products obtained successfully",
-        data: limitedProducts,
-      });
-    } else {
-      return res.json({
-        status: "success",
-        message: "Products obtained successfully",
-        data: products,
-      });
+    if (status != undefined && status != "true" && status != "false") {
+      return res
+        .status(400)
+        .json({ status: "Error", Error: "The status must be true or false" });
     }
+
+    if (sort != undefined && sort != "asc" && sort != "desc") {
+      return res
+        .status(400)
+        .json({ status: "Error", Error: `The sort must be asc or desc` });
+    }
+
+    const products = await classPM.find(limit, page, category, status, sort);
+
+    return res.json({
+      status: "success",
+      message: "Products obtained successfully",
+      payload: products.docs,
+      totalPages: products.totalPages,
+      prevPage: products.prevPage,
+      nextPage: products.nextPage,
+      page: products.page,
+      hasPrevPage: products.hasPrevPage,
+      hasNextPage: products.hasNextPage,
+      prevLink: products.prevLink,
+      nextLink: products.nextLink,
+    });
   } catch (error) {
     return res.status(400).json({ status: "Error", Error: error });
   }
@@ -32,13 +44,11 @@ export const findOne = async (req, res) => {
     let pid = req.params.pid;
     const product = await classPM.findOne(pid);
 
-    return res
-      .status(200)
-      .json({
-        status: "success",
-        message: "Product obtained successfully",
-        data: product,
-      });
+    return res.status(200).json({
+      status: "success",
+      message: "Product obtained successfully",
+      data: product,
+    });
   } catch (error) {
     return res.status(400).json({ status: "Error", Error: error });
   }
@@ -49,7 +59,11 @@ export const addProduct = async (req, res) => {
     const classPM = new ProductManager();
     const addProduct = await classPM.create(req.body);
 
-    return res.status(201).json({ status: "success", message: "Product created successfully",data: addProduct });
+    return res.status(201).json({
+      status: "success",
+      message: "Product created successfully",
+      data: addProduct,
+    });
   } catch (error) {
     return res.status(400).json({ status: "Error", Error: error });
   }
@@ -80,8 +94,12 @@ export const deleteOne = async (req, res) => {
     const classPM = new ProductManager();
     const id = req.params.pid;
     const deleteProduct = await classPM.deleteOne(id);
-    
-    return res.status(200).json({ status: "success",message: "Product removed successfully", data: deleteProduct });
+
+    return res.status(200).json({
+      status: "success",
+      message: "Product removed successfully",
+      data: deleteProduct,
+    });
   } catch (error) {
     return res.status(400).json({ status: "Error", Error: error });
   }

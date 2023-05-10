@@ -5,8 +5,13 @@ const cartCollection = "cart";
 const CartSchema = new Schema({
   products: [
     {
-      idProduct: { type: Schema.Types.ObjectId },
-      quantity: { type: Schema.Types.Number },
+      idProduct: {
+        type: Schema.Types.ObjectId,
+        index: true,
+        ref: "product",
+        default: [],
+      },
+      quantity: { type: Schema.Types.Number, require: true },
     },
   ],
 });

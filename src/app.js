@@ -1,7 +1,7 @@
 import express from "express";
 import productsRoute from "./routers/productsRoute.js";
 import cartsRoute from "./routers/cartsRoute.js";
-import viewsRoute from "./routers/viewsRoute.js";
+// import viewsRoute from "./routers/viewsRoute.js";
 import { resolve } from "path";
 import dotenv from "dotenv";
 import mongoose from "mongoose";

@@ -5,8 +5,8 @@ class ProductManager {
     this.productDao = new ProductMongooseDao();
   }
 
-  async find() {
-    return this.productDao.find();
+  async find(limit, page, category, status, sort) {
+    return this.productDao.find(limit, page, category, status, sort);
   }
 
   async findOne(id) {

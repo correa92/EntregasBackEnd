@@ -1,20 +1,49 @@
 import productSchema from "./models/productSchema.js";
 
 class ProductMongooseDao {
-  async find() {
-    const productDocument = await productSchema.find();
+  async find(limitDoc = 10, pageDoc = 1, categoryDoc, statusDoc, sortDoc = 1) {
+    const query = {};
 
-    return productDocument.map((doc) => ({
-      title: doc.title,
-      description: doc.description,
-      price: doc.price,
-      thumbnail: doc.thumbnail,
-      code: doc.code,
-      stock: doc.stock,
-      category: doc.category,
-      status: doc.status,
-      id: doc.id,
-    }));
+    if (categoryDoc != undefined) {
+      query.category = categoryDoc;
+    }
+    if (statusDoc != undefined) {
+      query.status = statusDoc;
+    }
+
+    const productDocument = await productSchema.paginate(query, {
+      limit: limitDoc,
+      sort: { price: sortDoc === "asc" ? 1 : -1 },
+      page: pageDoc,
+    });
+
+    return {
+      docs: productDocument.docs.map((doc) => ({
+        title: doc.title,
+        description: doc.description,
+        price: doc.price,
+        thumbnail: doc.thumbnail,
+        code: doc.code,
+        stock: doc.stock,
+        category: doc.category,
+        status: doc.status,
+        id: doc.id,
+      })),
+      totalPages: productDocument.totalPages,
+      prevPage: productDocument.prevPage,
+      nextPage: productDocument.nextPage,
+      page: productDocument.page,
+      hasPrevPage: productDocument.hasPrevPage,
+      hasNextPage: productDocument.hasNextPage,
+      prevLink:
+        productDocument.hasPrevPage === false
+          ? null
+          : productDocument.hasPrevPage,
+      nextLink:
+        productDocument.hasNextPage === false
+          ? null
+          : productDocument.hasNextPage,
+    };
   }
 
   async findOne(id) {
@@ -50,7 +79,11 @@ class ProductMongooseDao {
   }
 
   async updateOne(id, data) {
-    const productDocument = await productSchema.findOneAndUpdate({ _id: id },data,{ new: true });
+    const productDocument = await productSchema.findOneAndUpdate(
+      { _id: id },
+      data,
+      { new: true }
+    );
 
     if (!productDocument) {
       throw new Error("The product does not exist");

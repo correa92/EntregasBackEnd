@@ -2,7 +2,7 @@ import cartSchema from "./models/cartSchema.js";
 
 class CartMongooseDao {
   async getOne(id) {
-    const cartDocument = await cartSchema.findOne({ _id: id });
+    const cartDocument = await cartSchema.findOne({ _id: id }).populate(['products.idProduct']);
 
     return {
       id: cartDocument?._id,
