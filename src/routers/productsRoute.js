@@ -7,6 +7,7 @@ import {
   addProduct,
 } from "../controllers/productsController.js";
 
+
 const productsRoute = Router();
 
 productsRoute.get("/", get);
